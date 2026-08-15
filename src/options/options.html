@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SlopGuard — Pengaturan</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="sg-options">
+    <!-- Header -->
+    <header class="sg-options-header">
+      <div class="sg-options-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+        <div>
+          <h1>SlopGuard</h1>
+          <p class="sg-options-subtitle">Pengaturan Ekstensi</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="sg-options-main">
+      <!-- Provider & API Key -->
+      <section class="sg-card">
+        <h2 class="sg-card-title">Provider LLM</h2>
+        <p class="sg-card-desc">Pilih provider AI dan masukkan API key untuk mengaktifkan analisis.</p>
+
+        <div class="sg-form-group">
+          <label class="sg-label" for="providerSelect">Provider</label>
+          <select class="sg-select" id="providerSelect">
+            <option value="gemini">Gemini API (Google)</option>
+            <option value="groq">Groq API (Llama 3)</option>
+            <option value="ollama">Ollama (Lokal)</option>
+          </select>
+        </div>
+
+        <div class="sg-form-group">
+          <label class="sg-label" for="apiKeyInput" id="apiKeyLabel">API Key / Endpoint</label>
+          <div class="sg-input-row">
+            <input
+              type="password"
+              class="sg-input"
+              id="apiKeyInput"
+              placeholder="Masukkan API key atau endpoint Ollama"
+              autocomplete="off"
+              spellcheck="false"
+            >
+            <button class="sg-btn-icon" id="toggleKeyVisibility" title="Tampilkan/sembunyikan key" aria-label="Toggle key visibility">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <p class="sg-input-hint" id="apiKeyHint">Dapatkan API key dari <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>.</p>
+        </div>
+
+        <div class="sg-form-group">
+          <label class="sg-label" for="modelInput">Model</label>
+          <input
+            type="text"
+            class="sg-input"
+            id="modelInput"
+            value="gemini-3.7-flash"
+            placeholder="gemini-3.7-flash"
+          >
+        </div>
+
+        <div class="sg-btn-row">
+          <button class="sg-btn sg-btn-outline" id="testConnectionBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            Test Koneksi
+          </button>
+          <span class="sg-connection-status" id="connectionStatus"></span>
+        </div>
+      </section>
+
+      <!-- Threshold -->
+      <section class="sg-card">
+        <h2 class="sg-card-title">Ambang Batas Skor</h2>
+        <p class="sg-card-desc">Sesuaikan ambang batas untuk kategori status audit.</p>
+
+        <div class="sg-threshold-group">
+          <div class="sg-threshold-item">
+            <div class="sg-threshold-header">
+              <span class="sg-threshold-dot sg-dot-green"></span>
+              <label class="sg-label" for="thresholdLow">Kemungkinan Manusia (0 - <span id="thresholdLowValue">30</span>%)</label>
+            </div>
+            <input
+              type="range"
+              class="sg-range sg-range-green"
+              id="thresholdLow"
+              min="5"
+              max="50"
+              value="30"
+              step="5"
+            >
+          </div>
+
+          <div class="sg-threshold-item">
+            <div class="sg-threshold-header">
+              <span class="sg-threshold-dot sg-dot-yellow"></span>
+              <label class="sg-label" for="thresholdMedium">Perlu Ditinjau (<span id="thresholdLowPlus">31</span> - <span id="thresholdMediumValue">65</span>%)</label>
+            </div>
+            <input
+              type="range"
+              class="sg-range sg-range-yellow"
+              id="thresholdMedium"
+              min="40"
+              max="90"
+              value="65"
+              step="5"
+            >
+          </div>
+
+          <div class="sg-threshold-preview">
+            <span class="sg-threshold-dot sg-dot-red"></span>
+            <span class="sg-label">Kemungkinan AI-Generated (<span id="thresholdHighStart">66</span> - 100%)</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cache Management -->
+      <section class="sg-card">
+        <h2 class="sg-card-title">Cache</h2>
+        <p class="sg-card-desc">Hasil audit di-cache untuk menghindari request API berulang.</p>
+
+        <div class="sg-form-group">
+          <label class="sg-label" for="cacheTtlSelect">Retensi Cache</label>
+          <select class="sg-select" id="cacheTtlSelect">
+            <option value="86400000">1 hari</option>
+            <option value="259200000">3 hari</option>
+            <option value="604800000" selected>7 hari</option>
+            <option value="1209600000">14 hari</option>
+            <option value="2592000000">30 hari</option>
+          </select>
+        </div>
+
+        <div class="sg-btn-row">
+          <button class="sg-btn sg-btn-outline sg-btn-danger" id="clearCacheBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+            </svg>
+            Hapus Semua Cache
+          </button>
+          <span class="sg-cache-info" id="cacheInfo"></span>
+        </div>
+      </section>
+
+      <!-- Domain List -->
+      <section class="sg-card">
+        <h2 class="sg-card-title">Daftar Domain</h2>
+        <p class="sg-card-desc">Nonaktifkan SlopGuard untuk domain tertentu.</p>
+
+        <div class="sg-form-group">
+          <label class="sg-label" for="blacklistInput">Domain yang dikecualikan (satu per baris)</label>
+          <textarea
+            class="sg-textarea"
+            id="blacklistInput"
+            rows="4"
+            placeholder="localhost&#10;internal.company.com&#10;example.dev"
+          ></textarea>
+        </div>
+      </section>
+
+      <!-- Privacy -->
+      <section class="sg-card sg-card-info">
+        <h2 class="sg-card-title">Privasi</h2>
+        <div class="sg-privacy-content">
+          <p>SlopGuard mengirimkan <strong>teks halaman yang dianalisis</strong> ke provider LLM pilihan Anda (Gemini API) untuk mendapatkan skor AI-probability.</p>
+          <p>Tidak ada data yang dikirim ke server SlopGuard. Komunikasi hanya terjadi langsung antara ekstensi dan provider LLM Anda (BYOK).</p>
+          <p>API key disimpan secara lokal di browser Anda dan tidak pernah ditransmisikan ke pihak lain selain provider yang dikonfigurasi.</p>
+        </div>
+      </section>
+
+      <!-- Save Button -->
+      <div class="sg-save-section">
+        <button class="sg-btn sg-btn-primary" id="saveBtn">Simpan Pengaturan</button>
+        <span class="sg-save-status" id="saveStatus"></span>
+      </div>
+    </main>
+  </div>
+
+  <script src="options.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,357 @@
+/**
+ * SlopGuard — Popup Styles
+ * Dark mode, monokrom fungsional, 360px width.
+ */
+
+/* === Base === */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 360px;
+  max-height: 560px;
+  overflow-y: auto;
+  background: #0A0A0A;
+  color: #E5E5E5;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body::-webkit-scrollbar {
+  width: 4px;
+}
+
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 2px;
+}
+
+/* === Popup Container === */
+.sg-popup {
+  display: flex;
+  flex-direction: column;
+}
+
+/* === Header === */
+.sg-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #1A1A1A;
+}
+
+.sg-popup-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #FAFAFA;
+}
+
+.sg-logo {
+  color: #A3A3A3;
+}
+
+/* === Status Badge === */
+.sg-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid #2A2A2A;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #737373;
+  transition: all 0.2s ease;
+}
+
+.sg-status-badge.sg-badge-active {
+  border-color: #166534;
+  color: #22C55E;
+}
+
+.sg-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #525252;
+  transition: background 0.2s ease;
+}
+
+.sg-status-dot.sg-dot-active {
+  background: #22C55E;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+}
+
+/* === Sections === */
+.sg-popup-section {
+  padding: 12px 20px;
+  border-bottom: 1px solid #1A1A1A;
+}
+
+.sg-action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* === Toggle Row === */
+.sg-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sg-toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sg-toggle-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #E5E5E5;
+}
+
+.sg-toggle-hint {
+  font-size: 11px;
+  color: #525252;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+/* === Toggle Switch === */
+.sg-toggle {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sg-toggle-track {
+  display: block;
+  width: 36px;
+  height: 20px;
+  background: #2A2A2A;
+  border-radius: 10px;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.sg-toggle-active .sg-toggle-track {
+  background: #166534;
+}
+
+.sg-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #737373;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.sg-toggle-active .sg-toggle-thumb {
+  left: 18px;
+  background: #22C55E;
+}
+
+/* === Buttons === */
+.sg-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  border: 1px solid transparent;
+}
+
+.sg-btn-primary {
+  background: #FAFAFA;
+  color: #0A0A0A;
+  border-color: #FAFAFA;
+}
+
+.sg-btn-primary:hover:not(:disabled) {
+  background: #E5E5E5;
+}
+
+.sg-btn-secondary {
+  background: transparent;
+  color: #A3A3A3;
+  border-color: #2A2A2A;
+}
+
+.sg-btn-secondary:hover:not(:disabled) {
+  background: #141414;
+  color: #E5E5E5;
+  border-color: #333;
+}
+
+.sg-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* === Summary Card === */
+.sg-section-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: #525252;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.sg-summary-card {
+  padding: 12px;
+  background: #141414;
+  border: 1px solid #1F1F1F;
+  border-radius: 6px;
+}
+
+.sg-summary-url {
+  font-size: 12px;
+  color: #737373;
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sg-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.sg-summary-score {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sg-summary-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border: 1px solid;
+  border-radius: 3px;
+}
+
+.sg-summary-time {
+  font-size: 11px;
+  color: #525252;
+}
+
+/* === Footer === */
+.sg-popup-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 20px;
+}
+
+.sg-footer-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #525252;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.sg-footer-link:hover {
+  color: #A3A3A3;
+}
+
+.sg-footer-divider {
+  width: 1px;
+  height: 14px;
+  background: #2A2A2A;
+}
+
+/* === Temp Message === */
+.sg-temp-message {
+  padding: 8px 20px;
+  background: #1A1A1A;
+  color: #EAB308;
+  font-size: 11px;
+  text-align: center;
+  animation: sg-slide-down 0.2s ease-out;
+}
+
+@keyframes sg-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Quick Select Dropdown */
+.sg-quick-select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sg-quick-select:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sg-quick-select:focus {
+  border-color: #3b82f6;
+}
+
+.sg-quick-select optgroup {
+  background: #171717;
+  color: #a3a3a3;
+  font-weight: 600;
+}
+
+.sg-quick-select option {
+  background: #171717;
+  color: #fff;
+}

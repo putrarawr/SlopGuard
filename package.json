@@ -1,0 +1,15 @@
+{
+  "name": "slopguard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Browser extension untuk deteksi konten AI-generated (AI slop) secara real-time",
+  "type": "module",
+  "scripts": {
+    "dev": "node build.js --dev",
+    "build": "node build.js",
+    "preview": "node build.js && echo 'Build complete. Load dist/ folder in chrome://extensions'"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
+}
