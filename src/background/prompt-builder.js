@@ -132,7 +132,7 @@ ATURAN:
 - "statusLabel" harus "original" jika aiProbability <= ${thresholds.low}.
 - "statusLabel" harus "needs_review" jika aiProbability > ${thresholds.low} dan <= ${thresholds.medium}.
 - "statusLabel" harus "high_slop" jika aiProbability > ${thresholds.medium}.
-- "flaggedPhrases" maksimal 5 frasa klise yang PALING dominan ditemukan dalam teks.
+- "flaggedPhrases" maksimal 5 frasa klise. HARUS berupa kutipan PERSIS (COPY-PASTE) dari bagian teks asli yang mencurigakan.
 - "summary" harus menjelaskan pola keseluruhan yang ditemukan (misalnya: "Artikel ini banyak menggunakan repetisi struktur dan filler generik, indikasi kuat AI").`;
 
   const user = `Audit teks halaman berikut ini:\n\n---\n${text}\n---`;

@@ -19,6 +19,7 @@ let debounceTimer = null;
 let throttleTimer = null;
 let lastHoveredElement = null;
 let currentTabId = null;
+let phraseElementsMap = {};
 
 // === Initialization ===
 
@@ -32,6 +33,9 @@ function init() {
  * Create Shadow DOM container yang terisolasi dari halaman host.
  */
 function createShadowContainer() {
+  const existing = document.getElementById('slopguard-root');
+  if (existing) existing.remove();
+
   const container = document.createElement('div');
   container.id = 'slopguard-root';
   container.setAttribute('style', 'position:fixed;top:0;left:0;width:0;height:0;overflow:visible;z-index:2147483647;pointer-events:none;');
@@ -49,6 +53,22 @@ function createShadowContainer() {
   // Initialize UIs
   inspectorUI = new InspectorUI(shadowRoot);
   sidebarUI = new SidebarUI(shadowRoot);
+  sidebarUI.onHide = clearHighlights;
+  sidebarUI.onGotoPhrase = (index) => {
+    const el = phraseElementsMap[index];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Berikan efek flash
+      el.style.transition = 'background-color 0.5s';
+      const originalBg = el.style.backgroundColor;
+      el.style.backgroundColor = 'rgba(255, 200, 0, 0.5)';
+      setTimeout(() => {
+        el.style.backgroundColor = originalBg;
+      }, 1000);
+    }
+  };
+  
+  injectHighlightStyles();
 }
 
 // === Message Listener ===
@@ -80,6 +100,9 @@ function setupMessageListener() {
 
       case MSG.SHOW_SIDEBAR_RESULT:
         sidebarUI.showResult(message.data);
+        if (message.data && message.data.flaggedPhrases) {
+          highlightPhrases(message.data.flaggedPhrases);
+        }
         sendResponse({ success: true });
         break;
 
@@ -104,6 +127,85 @@ function setupMessageListener() {
 }
 
 // === Inspector Mode Control ===
+
+function injectHighlightStyles() {
+  if (document.getElementById('sg-highlight-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'sg-highlight-styles';
+  style.textContent = `
+    [data-slopguard-highlight="true"] {
+      background-color: rgba(255, 60, 60, 0.15) !important;
+      outline: 2px dashed rgba(255, 60, 60, 0.8) !important;
+      outline-offset: 2px !important;
+      border-radius: 4px !important;
+      transition: all 0.3s ease !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function clearHighlights() {
+  const highlighted = document.querySelectorAll('[data-slopguard-highlight="true"]');
+  highlighted.forEach(el => el.removeAttribute('data-slopguard-highlight'));
+}
+
+function highlightPhrases(phrases) {
+  clearHighlights();
+  if (!phrases || phrases.length === 0) return;
+
+  const cleanPhrases = phrases
+    .map(p => p.toLowerCase().replace(/\s+/g, ' ').trim())
+    .filter(p => p.length > 5);
+
+  if (cleanPhrases.length === 0) return;
+
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_ELEMENT,
+    {
+      acceptNode: (node) => {
+        if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'SVG'].includes(node.tagName)) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        if (node.closest('#slopguard-root')) return NodeFilter.FILTER_REJECT;
+        
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    }
+  );
+
+  const elements = [];
+  while (walker.nextNode()) {
+    elements.push(walker.currentNode);
+  }
+
+  const matchedElements = new Set();
+  phraseElementsMap = {};
+  
+  cleanPhrases.forEach((phrase, index) => {
+    let bestMatch = null;
+    let minLength = Infinity;
+
+    for (const el of elements) {
+      const text = (el.textContent || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      if (text.includes(phrase)) {
+        if (text.length < minLength) {
+          minLength = text.length;
+          bestMatch = el;
+        }
+      }
+    }
+
+    if (bestMatch) {
+      matchedElements.add(bestMatch);
+      phraseElementsMap[index] = bestMatch;
+    }
+  });
+
+  matchedElements.forEach(el => {
+    el.setAttribute('data-slopguard-highlight', 'true');
+  });
+}
 
 function toggleInspector() {
   setInspectorState(!inspectorActive);
@@ -348,7 +450,6 @@ function restoreTabState() {
 
 async function performFullPageAudit() {
   console.log('[SlopGuard] Memulai Active Page Audit...');
-  sidebarUI.showLoading();
 
   try {
     // 1. Ekstrak teks
@@ -356,6 +457,14 @@ async function performFullPageAudit() {
     if (texts.length === 0) {
       sidebarUI.showError('Tidak dapat menemukan konten teks yang cukup panjang di halaman ini.', () => sidebarUI.hide());
       return;
+    }
+
+    // 2. Pre-check Cache untuk menghindari loading UI flicker
+    const url = window.location.href;
+    const isCached = await sendToBackground(MSG.CHECK_CACHE, { url, type: 'fullpage' });
+    
+    if (!isCached) {
+      sidebarUI.showLoading();
     }
 
     // 2. Potong menjadi chunks (di versi ini kita kirim 1 chunk gabungan)

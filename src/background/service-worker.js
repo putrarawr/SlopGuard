@@ -66,7 +66,10 @@ async function handleMessage(message, sender) {
       return handleTestConnection(payload);
 
     case MSG.CLEAR_CACHE:
-      return handleClearCache();
+      return cacheManager.clearAll();
+
+    case MSG.CHECK_CACHE:
+      return handleCheckCache(payload);
 
     case MSG.GET_TAB_STATE:
       return handleGetTabState(payload);
@@ -258,14 +261,31 @@ async function handleAnalyzeFullPage(payload, requestId) {
     return { success: false, error: 'API Key belum dikonfigurasi. Buka pengaturan.' };
   }
 
+  // 2. Cek Cache berdasarkan URL
+  let safeUrl = url || '';
+  try { safeUrl = btoa(encodeURIComponent(safeUrl)).substring(0, 50); } catch(e) { safeUrl = 'unknown'; }
+  const contentHash = 'fullpage_' + safeUrl;
+  const cached = await cacheManager.get(contentHash);
+  if (cached) {
+    return {
+      success: true,
+      requestId,
+      data: cached,
+      fromCache: true,
+    };
+  }
+
   try {
     const provider = createProvider(settings);
     
-    // 2. Build prompt spesifik untuk seluruh halaman
+    // 3. Build prompt spesifik untuk seluruh halaman
     const prompt = buildFullPagePrompt(text, settings.thresholds);
     
-    // 3. Panggil API
+    // 4. Panggil API
     const result = await provider.analyze(prompt);
+    
+    // 5. Simpan ke Cache
+    await cacheManager.set(contentHash, result, settings.cacheTtlMs);
 
     return {
       success: true,
@@ -280,13 +300,37 @@ async function handleAnalyzeFullPage(payload, requestId) {
 }
 
 /**
+ * Cek apakah halaman sudah ada di cache
+ */
+async function handleCheckCache(payload) {
+  const { url, type } = payload;
+  let safeUrl = url || '';
+  try { safeUrl = btoa(encodeURIComponent(safeUrl)).substring(0, 50); } catch(e) { safeUrl = 'unknown'; }
+  const contentHash = type + '_' + safeUrl;
+  
+  const cached = await cacheManager.get(contentHash);
+  return !!cached;
+}
+
+/**
  * Analisis Desain Visual (Multimodal)
  */
 async function handleAnalyzeDesign(message, sender) {
   const tabId = message.tabId || sender?.tab?.id;
-  if (!tabId) return { success: false, error: 'Tab ID tidak ditemukan' };
+  const url = sender?.tab?.url || message.url || '';
 
   try {
+    // 0. Pre-check Cache
+    let safeUrl = url;
+    try { safeUrl = btoa(encodeURIComponent(safeUrl)).substring(0, 50); } catch(e) { safeUrl = 'unknown'; }
+    const contentHash = 'design_' + safeUrl;
+    
+    const cached = await cacheManager.get(contentHash);
+    if (cached) {
+      chrome.tabs.sendMessage(tabId, { type: MSG.SHOW_SIDEBAR_RESULT, data: cached });
+      return { success: true };
+    }
+
     // 1. Tampilkan loading di sidebar
     chrome.tabs.sendMessage(tabId, { type: MSG.SHOW_SIDEBAR_LOADING });
 
@@ -315,7 +359,10 @@ async function handleAnalyzeDesign(message, sender) {
     // 4. Panggil API (Provider harus dimodifikasi untuk mendukung prompt.image)
     const result = await provider.analyze(prompt);
 
-    // 5. Kirim hasil kembali ke tab untuk ditampilkan di sidebar
+    // 5. Simpan ke Cache
+    await cacheManager.set(contentHash, result, settings.cacheTtlMs);
+
+    // 6. Kirim hasil kembali ke tab untuk ditampilkan di sidebar
     chrome.tabs.sendMessage(tabId, { type: MSG.SHOW_SIDEBAR_RESULT, data: result });
     
     return { success: true };

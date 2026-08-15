@@ -15,6 +15,7 @@ export class SidebarUI {
   showLoading() {
     this._sidebar.style.transform = 'translateX(0)';
     this._sidebar.innerHTML = this._buildLoadingHTML();
+    this._attachEvents();
   }
 
   showResult(data) {
@@ -33,6 +34,9 @@ export class SidebarUI {
 
   hide() {
     this._sidebar.style.transform = 'translateX(100%)';
+    if (this.onHide) {
+      this.onHide();
+    }
   }
 
   _createSidebar() {
@@ -50,6 +54,16 @@ export class SidebarUI {
     if (closeBtn) {
       closeBtn.addEventListener('click', () => this.hide());
     }
+
+    const gotoBtns = this._sidebar.querySelectorAll('.sg-goto-btn');
+    gotoBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = e.currentTarget.getAttribute('data-index');
+        if (this.onGotoPhrase) {
+          this.onGotoPhrase(parseInt(index, 10));
+        }
+      });
+    });
   }
 
   _buildLoadingHTML() {
@@ -95,7 +109,12 @@ export class SidebarUI {
           <div class="sg-phrases-section">
             <h3>Frasa Terdeteksi (${phrases.length})</h3>
             <ul class="sg-sidebar-phrases">
-              ${phrases.map(p => `<li>${p}</li>`).join('')}
+              ${phrases.map((p, i) => `
+                <li style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                  <span>${p}</span>
+                  <button class="sg-goto-btn" data-index="${i}" title="Scroll ke lokasi" style="background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px;">👁️</button>
+                </li>
+              `).join('')}
             </ul>
           </div>
         ` : `
