@@ -182,7 +182,10 @@ function highlightPhrases(phrases) {
   const matchedElements = new Set();
   phraseElementsMap = {};
   
-  cleanPhrases.forEach((phrase, index) => {
+  phrases.forEach((rawPhrase, index) => {
+    const phrase = rawPhrase.toLowerCase().replace(/\s+/g, ' ').trim();
+    if (phrase.length <= 5) return; // Skip too short phrases
+
     let bestMatch = null;
     let minLength = Infinity;
 
@@ -196,9 +199,35 @@ function highlightPhrases(phrases) {
       }
     }
 
+    // Fallback: Jika AI melakukan paraphrasing (tidak ada exact match)
+    if (!bestMatch) {
+      const words = phrase.split(' ').filter(w => w.length > 3);
+      if (words.length >= 2) {
+        for (const el of elements) {
+          const text = (el.textContent || '').toLowerCase();
+          const allWordsExist = words.every(w => text.includes(w));
+          if (allWordsExist && text.length < minLength) {
+            minLength = text.length;
+            bestMatch = el;
+          }
+        }
+      }
+    }
+
     if (bestMatch) {
       matchedElements.add(bestMatch);
       phraseElementsMap[index] = bestMatch;
+    } else {
+      // Disable button if not found
+      if (sidebarUI && sidebarUI._sidebar) {
+        const btn = sidebarUI._sidebar.querySelector(`.sg-goto-btn[data-index="${index}"]`);
+        if (btn) {
+          btn.disabled = true;
+          btn.title = "Lokasi tidak ditemukan (AI mengubah kutipan)";
+          btn.style.opacity = '0.3';
+          btn.style.cursor = 'not-allowed';
+        }
+      }
     }
   });
 
